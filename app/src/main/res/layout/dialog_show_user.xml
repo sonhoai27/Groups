@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:padding="16dp"
+    android:background="@color/colorAccent"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <TextView
+        android:layout_marginBottom="8dp"
+        android:textSize="26dp"
+        android:text="Danh sách thành viên"
+        android:textColor="#fff"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    <TextView
+        android:layout_marginBottom="16dp"
+        android:textSize="16dp"
+        android:text="Thành viên có thể tham gia các nhóm thuyết trình, gởi tin nhắn, chia sẻ tập tin."
+        android:textColor="#fff"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    <ListView
+        android:id="@+id/lvListUserClass"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+</LinearLayout>
