@@ -1,15 +1,19 @@
 package com.sonhoai.groups.Adapter;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.text.Html;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.sonhoai.groups.DataModels.Message;
 import com.sonhoai.groups.R;
+import com.sonhoai.groups.Uti.HandleFBAuth;
 
 import java.util.List;
 
@@ -47,15 +51,35 @@ public class MessageAdapter extends BaseAdapter {
         } else {
             holder = (ViewHolder) view.getTag();
         }
-        holder.txtName.setText(messages.get(i).getNameUser());
-        holder.txtContent.setText(Html.fromHtml(messages.get(i).getContent()));
-        holder.txtDate.setText(messages.get(i).getDate());
+        if(messages.get(i).getIdUser().equals(HandleFBAuth.firebaseAuth.getUid())){
+            holder.txtName.setText(messages.get(i).getNameUser());
+            holder.txtContent.setText(Html.fromHtml(messages.get(i).getContent()));
+            holder.txtDate.setText(messages.get(i).getDate());
+
+            holder.layoutItemChat.setGravity(Gravity.RIGHT);
+            holder.txtContent.setBackgroundResource(R.drawable.bg_message_2);
+
+            holder.txtContent.setTextColor(Color.WHITE);
+        }else if(!messages.get(i).getIdUser().equals(HandleFBAuth.firebaseAuth.getUid())){
+            holder.txtName.setText(messages.get(i).getNameUser());
+            holder.txtContent.setText(Html.fromHtml(messages.get(i).getContent()));
+            holder.txtDate.setText(messages.get(i).getDate());
+
+            holder.layoutItemChat.setGravity(Gravity.LEFT);
+
+            holder.txtContent.setBackgroundResource(R.drawable.bg_message);
+
+            holder.txtContent.setTextColor(Color.GRAY);
+        }
+
         return view;
     }
 
     private class ViewHolder{
         private TextView txtName,txtContent,txtDate;
+        private LinearLayout layoutItemChat;
         ViewHolder(View view){
+            layoutItemChat = view.findViewById(R.id.layoutItemChat);
             txtName = view.findViewById(R.id.txtNameChat);
             txtContent = view.findViewById(R.id.txtContentChat);
             txtDate = view.findViewById(R.id.txtDateChat);

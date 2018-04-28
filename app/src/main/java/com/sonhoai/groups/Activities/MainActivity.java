@@ -7,6 +7,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -111,6 +112,7 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    //lấy ra danh sách lớp đã tạo
     private void getClassLists(){
         mClasses = mDatabase.getReference("classes");
         mClasses.addValueEventListener(new ValueEventListener() {
@@ -118,6 +120,7 @@ public class MainActivity extends AppCompatActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Log.i("AAAA", String.valueOf(dataSnapshot.getValue()));
                 classes.clear();
+                //nếu khác null, là có lớp thì thêm lớp vào ds, sau đó notify lại adapter
                 if(dataSnapshot.getValue() != null){
                     for (DataSnapshot item: dataSnapshot.getChildren()) {
                         Class aClass = item.getValue(Class.class);
@@ -135,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    //lấy ra tên của account đã đăng nhập vào ứng dụng
     private void getNameUser(final CallBack<String> userName){
         mClasses = mDatabase.getReference("users/"+HandleFBAuth.firebaseAuth.getUid()+"/name");
         mClasses.addValueEventListener(new ValueEventListener() {
@@ -149,6 +153,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    //iten, để qua màn hình group, nơi chứa các nhóm thuyết trình của lớp này
     private void detailClass(ListView lv){
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -158,5 +164,18 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
+
+    //xử lý nhấn nút back, nếu là nút back, thì thoát khỏi app và trở về màn hình home
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if(keyCode == event.KEYCODE_BACK){
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_HOME);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            return true;
+        }
+        return false;
     }
 }

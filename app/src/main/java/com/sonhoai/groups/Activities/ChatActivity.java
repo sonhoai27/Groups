@@ -179,19 +179,24 @@ public class ChatActivity extends AppCompatActivity{
                             SimpleDateFormat sdf=new SimpleDateFormat("hh:mm a, dd-MM-yyyy");
                             String currentDateTimeString = sdf.format(currentTime);
                             mReference = mDatabase.getReference("messages");
-                            Message message = new Message(
-                                    null,
-                                    HandleFBAuth.firebaseAuth.getUid(),
-                                    obj,
-                                    edtInput.getText().toString(),
-                                    currentDateTimeString
-                            );
-                            mReference.child(groupKey).push().setValue(message, new DatabaseReference.CompletionListener() {
-                                @Override
-                                public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                                    edtInput.setText("");
-                                }
-                            });
+                            if(edtInput.getText().toString().length() > 0){
+                                Message message = new Message(
+                                        null,
+                                        HandleFBAuth.firebaseAuth.getUid(),
+                                        obj,
+                                        edtInput.getText().toString(),
+                                        currentDateTimeString
+                                );
+                                edtInput.setText("");
+                                mReference.child(groupKey).push().setValue(message, new DatabaseReference.CompletionListener() {
+                                    @Override
+                                    public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                                        edtInput.setText("");
+                                    }
+                                });
+                            }else {
+                                Toast.makeText(getApplicationContext(), "Vui lòng nhập tin nhắn", Toast.LENGTH_SHORT).show();
+                            }
                         }
                     }
 

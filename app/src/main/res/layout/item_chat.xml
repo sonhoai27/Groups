@@ -1,47 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:padding="32dp"
+    android:id="@+id/layoutItemChat"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
     <LinearLayout
         android:layout_marginBottom="16dp"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:src="@drawable/ic_avatar" />
-
         <TextView
+            android:textStyle="bold"
             android:id="@+id/txtNameChat"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="4dp"
             android:layout_weight="10"
             android:text="SƠn"
             android:textSize="18dp" />
     </LinearLayout>
     <TextView
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="8dp"
         android:textColor="#444"
         android:background="@drawable/bg_message"
-        android:paddingLeft="10dp"
-        android:paddingRight="8dp"
-        android:paddingTop="16dp"
-        android:paddingBottom="16dp"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
         android:textSize="16dp"
         android:text="KAKA, chung ud"
         android:id="@+id/txtContentChat"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
     <TextView
-        android:textSize="14dp"
+        android:textColor="#999"
+        android:textSize="10dp"
         android:text="292932"
         android:id="@+id/txtDateChat"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 </LinearLayout>
