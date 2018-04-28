@@ -60,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    //dialog thêm một lốp mới vào db
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(item.getItemId() == R.id.action_add_class){

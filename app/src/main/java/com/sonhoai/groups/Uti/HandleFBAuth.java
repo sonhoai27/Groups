@@ -32,30 +32,39 @@ public class HandleFBAuth {
     private static FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
     private static DatabaseReference mReference;
 
+    //khởi tạo
     public HandleFBAuth(Context context) {
         this.context = context;
         firebaseAuth = FirebaseAuth.getInstance();
 
     }
 
+    //phương thức để kiểm tra xem đã đăng nhập vào app hay chưa
     public static FirebaseAuth.AuthStateListener fbListener() {
         authStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull final FirebaseAuth firebaseAuth) {
+                //lấy ra user hiện tại
                 FirebaseUser user = firebaseAuth.getCurrentUser();
+                //nếu có user đã đang nhập
                 if (user != null) {
                     //success
+                    //kiểm tra xem user này đã cập nhật tên hay chưa
                     mReference = mDatabase.getReference("users/" + firebaseAuth.getUid());
                     mReference.addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
+                            //nếu đã cập nhật rồi thì vào màn hình startactivity
                             if (dataSnapshot.getValue() != null) {
+                                //context này là truyền từ màn hình activity gọi tới class này
                                 Intent intent = new Intent(context, MainActivity.class);
                                 context.startActivity(intent);
-                                System.out.println(dataSnapshot.toString());
                             } else {
                                 try {
+                                    //nếu chưa có thêm tên, thì tạm thời ản đi cái view login này, ẩn đi các button và edittext
                                     LoginActivity.layoutLogin.setVisibility(View.GONE);
+
+                                    //tạo một dialog để cho người dùng cập nhật tên
                                     AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(context, R.style.myDialog));
                                     builder.setTitle("Vui lòng cập nhật tên");
                                     builder.setMessage("Bạn đã có tài khoản với Email là: " + firebaseAuth.getCurrentUser().getEmail() + ", " +
@@ -73,12 +82,16 @@ public class HandleFBAuth {
                                     builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
+                                            //khi người dùng nhấn vào nút ok thì cập nhật lại tên
                                             mReference = mDatabase.getReference("users/" + firebaseAuth.getUid());
+                                            //tạo một object có name:username
                                             HashMap<String, String> user = new HashMap<>();
                                             user.put("name", input.getText().toString());
+                                            //tiến hành cập nhật
                                             mReference.setValue(user, new DatabaseReference.CompletionListener() {
                                                 @Override
                                                 public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                                                    //nếu thành công thì toast ra và intent qua màn hình chính
                                                     Toast.makeText(context, "Thành công!", Toast.LENGTH_SHORT).show();
                                                     Intent intent = new Intent(context, MainActivity.class);
                                                     context.startActivity(intent);
@@ -86,6 +99,7 @@ public class HandleFBAuth {
                                             });
                                         }
                                     });
+                                    //nếu người dùng nhấn cancel thì ẩn đi dialog và cho hiện lại các button và edittext của loginactivity
                                     builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
