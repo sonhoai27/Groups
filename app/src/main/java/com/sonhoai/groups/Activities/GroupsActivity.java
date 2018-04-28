@@ -68,6 +68,7 @@ public class GroupsActivity extends AppCompatActivity {
         getClassLists();
     }
 
+    //class grroup này là nơi chứa tất cả các group thuộc class nào đó
     private void init(){
         lvGroups = findViewById(R.id.lvGroups);
         groupList = new ArrayList<>();
@@ -81,6 +82,7 @@ public class GroupsActivity extends AppCompatActivity {
         userAdapter = new UserAdapter(users, getApplicationContext());
         lvUsers.setAdapter(userAdapter);
 
+        //nhấn vào thì ra class chat của group vừa nhấn
         lvGroups.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -90,6 +92,8 @@ public class GroupsActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        //nhấn lâu thì ds user của class này, chọn user để thêm vào lớp
         lvGroups.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, final int i, long l) {
@@ -205,10 +209,14 @@ public class GroupsActivity extends AppCompatActivity {
         });
     }
 
-    //lấy ra ds user lớn và user của lớp, so trùng, nếu trùng thì ko hiện ra tránh thêm vào trùng
+
+    //class grroup này là nơi chứa tất cả các group thuộc class nào đó
+    //lấy ra ds user toàn bộ hệ thống có và user của lớp, so trùng, nếu trùng thì ko hiện ra tránh thêm vào trùng
     //trả về callback để kiểm tra dữ liệu đã sẵn ràng hay chưa
     private void getUserLists(final CallBack<String> userCallBack){
         final List<User> temUsers = new ArrayList<>();
+
+        //ds user của lớp
         mReference = mDatabase.getReference("memberClass/"+classKey);
         mReference.addValueEventListener(new ValueEventListener() {
             @Override
@@ -220,6 +228,7 @@ public class GroupsActivity extends AppCompatActivity {
                         temUsers.add(user1);
                     }
                     if(temUsers.size() > 0){
+                        //lấy ra ds user lớn, bắt đầu so trùng
                         mReference = mDatabase.getReference("users");
                         mReference.addValueEventListener(new ValueEventListener() {
                             @Override
@@ -281,6 +290,7 @@ public class GroupsActivity extends AppCompatActivity {
             }
         });
     }
+    //lấy ds class
     private void getClassLists(){
         Query recentPostsQuery = mDatabase.getReference("groups").orderByChild("idClass").startAt(classKey).endAt(classKey);
         recentPostsQuery.addValueEventListener(new ValueEventListener() {
@@ -304,6 +314,7 @@ public class GroupsActivity extends AppCompatActivity {
             }
         });
     }
+    //màn hình ;ấy ra ds user lớn, chọn user thêm vào lớp học này bằng class addUser
     public void toggleBottomSheet() {
         sheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
@@ -366,6 +377,7 @@ public class GroupsActivity extends AppCompatActivity {
         return super.dispatchTouchEvent(ev);
     }
 
+    //hàm thêm user vào lớp học này
     private void addUser(){
         lvUsers.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -377,6 +389,7 @@ public class GroupsActivity extends AppCompatActivity {
         });
     }
 
+    //thêm group mới vào class
     private void addGroup(){
         AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(GroupsActivity.this, R.style.myDialog));
 
@@ -421,6 +434,7 @@ public class GroupsActivity extends AppCompatActivity {
         builder.show();
     }
 
+    //dialog hiển thĩ ra ds user
     private void listUser(){
         final AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(GroupsActivity.this, R.style.myDialog));
 
@@ -454,6 +468,7 @@ public class GroupsActivity extends AppCompatActivity {
         builder.show();
     }
 
+    //hàm có tác dụng giúp hàm listUser lấy ra ds user, kiểm tra chắc chắn đã lấy ra xong chưa
     private void loadUserClass(final CallBack<List<User>> callBack){
 
         mReference = mDatabase.getReference("memberClass/"+classKey);
@@ -478,6 +493,7 @@ public class GroupsActivity extends AppCompatActivity {
         });
     }
 
+    //xóa user khỏi class
     private void deleteUserClass(ListView lv, final List<User> users){
         lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
@@ -596,6 +612,7 @@ public class GroupsActivity extends AppCompatActivity {
             }
         });
     }
+    //hàm thêm user vào 1 group nhất định
     private void addUserToGroup(GroupUser user, Group group){
         mReference = mDatabase.getReference("memberGroup/");
         mReference.child(group.getId()).child(user.getId()).setValue(user, new DatabaseReference.CompletionListener() {

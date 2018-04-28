@@ -70,10 +70,13 @@ public class ChatActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+
+        //nhận dữ liệu intent từ class group
         Bundle bundle = getIntent().getExtras();
         groupKey = bundle.getString("keyGroup");
         groupName = bundle.getString("keyName");
         init();
+        //lấy ra ds tin nhấn và thêm tin nhắn qua 2 hàm bên dưới
         addMessage();
         getMessages();
         pickFile();
@@ -113,9 +116,11 @@ public class ChatActivity extends AppCompatActivity{
         return false;
     }
 
+    //lấy ra ds các file mà thành viên đã chia sẽ
     private void showFile() {
-        final AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(ChatActivity.this, R.style.myDialog));
 
+        //tạo 1 dialog
+        final AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(ChatActivity.this, R.style.myDialog));
         LayoutInflater layoutInflater = getLayoutInflater();
         View view = layoutInflater.inflate(R.layout.dialog_manage_files, null);
 
@@ -123,11 +128,16 @@ public class ChatActivity extends AppCompatActivity{
         builder.setCancelable(true);
 
         final ListView lvListFile = view.findViewById(R.id.lvListFile);
+
+        //hàm load file, sử dụng 1 callback, nguyên nhân do có thể chạy bất đồng bộ, bất đồng bộm là chương trình sẽ không thực thi từ trên xuống dưới
+        //ví dụ mạng chậm thì sẽ load file chậm....
+        //callback này nếu mà load ra ds file thành công thì nó sẽ trả về 1 ds các file, từ ds này sẽ hiện thị ra listview
         loadListFiles(new CallBack<List<FileShare>>() {
             @Override
             public void isCompleted(List<FileShare> obj) {
                 FileAdapter fileAdapter = new FileAdapter(ChatActivity.this, obj);
                 lvListFile.setAdapter(fileAdapter);
+                //hàm xử lý click vào 1 file nhất định, khi click vào thì sẽ tải file về máy
                 onClickItemFile(lvListFile, obj);
             }
 
@@ -145,12 +155,16 @@ public class ChatActivity extends AppCompatActivity{
         builder.show();
     }
 
+    //lấy ra ds ti nhắn
     private void getMessages(){
+        //lấy ra tin nhắn của  group, mỗi group có 1 key riêng
         mReference = mDatabase.getReference("messages/"+groupKey);
         mReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                //reset lại mảng tin nhắn
                 messages.clear();
+                //nếu có tin nhắn thì duyệt vòng for và thêm tin nhắn vào list, sau đó update lại adapter
                 if(dataSnapshot.getValue() != null){
                     for (DataSnapshot item: dataSnapshot.getChildren()) {
                         Message message = item.getValue(Message.class);
@@ -175,10 +189,14 @@ public class ChatActivity extends AppCompatActivity{
                     @Override
                     public void isCompleted(String obj) {
                         if(obj!= null){
+
+                            //định dạng giờ
                             Date currentTime = Calendar.getInstance().getTime();
                             SimpleDateFormat sdf=new SimpleDateFormat("hh:mm a, dd-MM-yyyy");
                             String currentDateTimeString = sdf.format(currentTime);
                             mReference = mDatabase.getReference("messages");
+
+                            //nếu có nhập thì mới thêm
                             if(edtInput.getText().toString().length() > 0){
                                 Message message = new Message(
                                         null,
@@ -223,6 +241,7 @@ public class ChatActivity extends AppCompatActivity{
         });
     }
 
+    //hiển thị ds user có trong group thuyết trình này
     private void showUser(){
         final AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(ChatActivity.this, R.style.myDialog));
 
@@ -233,6 +252,7 @@ public class ChatActivity extends AppCompatActivity{
         builder.setCancelable(false);
 
         final ListView lvListUserClass = view.findViewById(R.id.lvListUserClass);
+        //hàm load ds user cho dialog này
         loadUserClass(new CallBack<List<GroupUser>>() {
             @Override
             public void isCompleted(List<GroupUser> obj) {
@@ -255,6 +275,7 @@ public class ChatActivity extends AppCompatActivity{
         builder.show();
     }
 
+    //hàm load ra ds user
     private void loadUserClass(final CallBack<List<GroupUser>> listCallBack) {
         mReference = mDatabase.getReference("memberGroup/"+groupKey);
         mReference.addValueEventListener(new ValueEventListener() {
@@ -276,6 +297,8 @@ public class ChatActivity extends AppCompatActivity{
             }
         });
     }
+
+    //lấy ra ds file, sử dụng callback cho dialog hiển thị ds file
     private void loadListFiles(final CallBack<List<FileShare>> listCallBack) {
         mReference = mDatabase.getReference("fileGroup/"+groupKey);
         mReference.addValueEventListener(new ValueEventListener() {
@@ -299,6 +322,8 @@ public class ChatActivity extends AppCompatActivity{
             }
         });
     }
+
+    //upload file
     private void pickFile(){
         imgSendFile.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -317,6 +342,7 @@ public class ChatActivity extends AppCompatActivity{
                 txtPickFile.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
+                        //nhảy qua màn hình chọn file, sau đó trả về, file vừa lấy qua hàm onActivityResult và up lên firebase
                         Intent intent = new Intent();
                         intent.setType("application/*");
                         intent.setAction(Intent.ACTION_GET_CONTENT);
@@ -340,9 +366,13 @@ public class ChatActivity extends AppCompatActivity{
                         @Override
                         public void isCompleted(final String obj) {
                             if(obj!= null){
+
+                                //lấy ra ngày
                                 Date currentTime = Calendar.getInstance().getTime();
                                 SimpleDateFormat sdf=new SimpleDateFormat("hh:mm a, dd-MM-yyyy");
                                 final String currentDateTimeString = sdf.format(currentTime);
+
+                                //upload lên fie=rebase
                                 mReference = mDatabase.getReference("fileGroup");
                                 FileShare fileShare = new FileShare(
                                         null,
@@ -355,6 +385,7 @@ public class ChatActivity extends AppCompatActivity{
                                 mReference.child(groupKey).push().setValue(fileShare, new DatabaseReference.CompletionListener() {
                                     @Override
                                     public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                                        //nếu thành công thì thêm vào list tin nhắn cho mọi người biết có người vừa tải file lên
                                         mReference = mDatabase.getReference("messages");
                                         Message message = new Message(
                                                 null,
@@ -384,6 +415,7 @@ public class ChatActivity extends AppCompatActivity{
         }
     }
 
+    //hàm xử lý kh click 1 item file nhất định, tải file về
     private void onClickItemFile(ListView lv, final List<FileShare> fileShares){
         lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
@@ -397,9 +429,11 @@ public class ChatActivity extends AppCompatActivity{
                 final File file = new File(dir,fileShares.get(po).getNameFile());
                 try {
                     if(!dir.exists()){
+                        //nếu thư mục không tồn tạo thì tạo
                         dir.mkdir();
                     }
                     file.createNewFile();
+                    //lấy file
                     islandRef.getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
                         @Override
                         public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
