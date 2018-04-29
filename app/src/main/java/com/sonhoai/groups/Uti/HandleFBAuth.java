@@ -39,7 +39,7 @@ public class HandleFBAuth {
 
     }
 
-    //phương thức để kiểm tra xem đã đăng nhập vào app hay chưa
+    //phương thức để kiểm tra xem đã đăng nhập vào app hay chưa, mỗi lần mở app lên thì sẽ kiểm tra  trong onStart
     public static FirebaseAuth.AuthStateListener fbListener() {
         authStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -59,7 +59,7 @@ public class HandleFBAuth {
                                 //context này là truyền từ màn hình activity gọi tới class này
                                 Intent intent = new Intent(context, MainActivity.class);
                                 context.startActivity(intent);
-                            } else {
+                            } else if(dataSnapshot.getValue() != null){
                                 try {
                                     //nếu chưa có thêm tên, thì tạm thời ản đi cái view login này, ẩn đi các button và edittext
                                     LoginActivity.layoutLogin.setVisibility(View.GONE);

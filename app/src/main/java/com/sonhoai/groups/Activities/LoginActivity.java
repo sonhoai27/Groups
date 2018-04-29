@@ -49,52 +49,21 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 //kiểm tra đã đăng nhập trước đó hay chưa
+                //da dang nhap
                 if(HandleFBAuth.firebaseAuth.getCurrentUser() != null){
                     //nếu rồi, ktra có tên hay chưa
                     mReference = mDatabase.getReference("users/" + HandleFBAuth.firebaseAuth.getUid());
                     mReference.addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
-                            if (dataSnapshot.getValue() != null) {
-                                signin(edtEmail.getText().toString(), edtPass.getText().toString());
-
-                                //kh mở app 1 class sẽ check dn hay chưa, rồi kra có tên ko, nếu ko thì hiện popup, nếu ng dùng cancel, thì khi login hay dak lại, thì sẽ chạy vào hàm hày để check lại có tên hay chưa
-                            } else if((dataSnapshot.getValue() == null)) {
-                                AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(LoginActivity.this, R.style.myDialog));
-                                builder.setTitle("Vui lòng cập nhật tên");
-                                builder.setMessage("Bạn đã có tài khoản với Email là: " + HandleFBAuth.firebaseAuth.getCurrentUser().getEmail() + ", " +
-                                        "nhưng bạn chưa cập nhật tên, vui lòng nhập vào bên dưới và nhấn OK.");
-
-                                // Set up the input
-                                final EditText input = new EditText(getApplicationContext());
-                                // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
-                                input.setInputType(InputType.TYPE_CLASS_TEXT);
-                                input.setHint("Nhập tên của bạn");
-                                input.setTextColor(Color.BLACK);
-
-                                builder.setView(input);
-                                builder.setCancelable(false);
-                                // Set up the buttons
-                                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        mReference = mDatabase.getReference("users/" + HandleFBAuth.firebaseAuth.getUid());
-                                        //tạo một object có name:username
-                                        HashMap<String, String> user = new HashMap<>();
-                                        user.put("name", input.getText().toString());
-                                        //tiến hành cập nhật
-                                        mReference.setValue(user, new DatabaseReference.CompletionListener() {
-                                            @Override
-                                            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                                                //nếu thành công thì toast ra và intent qua màn hình chính
-                                                Toast.makeText(getApplicationContext(), "Thành công!", Toast.LENGTH_SHORT).show();
-                                                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                                                startActivity(intent);
-                                            }
-                                        });
-                                    }
-                                });
-                                builder.show();
+//                            if (dataSnapshot.getValue() != null) {
+//                                signin(edtEmail.getText().toString(), edtPass.getText().toString());
+//                                //kh mở app 1 class sẽ check dn hay chưa, rồi kra có tên ko,
+//                                //nếu ko thì hiện popup, nếu ng dùng cancel, thì khi login hay dak lại,
+//                                // thì sẽ chạy vào hàm hày để check lại có tên hay chưa
+//                            } else
+                                if((dataSnapshot.getValue() == null)) {
+                                    checkUserName();
                             }
                         }
 
@@ -150,8 +119,7 @@ public class LoginActivity extends AppCompatActivity {
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
-                            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                            startActivity(intent);
+                            checkUserName();
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w("AAAA", "signInWithEmail:failure", task.getException());
@@ -162,5 +130,43 @@ public class LoginActivity extends AppCompatActivity {
                         // ...
                     }
                 });
+    }
+
+    private void checkUserName(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(LoginActivity.this, R.style.myDialog));
+        builder.setTitle("Vui lòng cập nhật tên");
+        builder.setMessage("Bạn đã có tài khoản với Email là: " + HandleFBAuth.firebaseAuth.getCurrentUser().getEmail() + ", " +
+                "nhưng bạn chưa cập nhật tên, vui lòng nhập vào bên dưới và nhấn OK.");
+
+        // Set up the input
+        final EditText input = new EditText(getApplicationContext());
+        // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        input.setHint("Nhập tên của bạn");
+        input.setTextColor(Color.BLACK);
+
+        builder.setView(input);
+        builder.setCancelable(false);
+        // Set up the buttons
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                mReference = mDatabase.getReference("users/" + HandleFBAuth.firebaseAuth.getUid());
+                //tạo một object có name:username
+                HashMap<String, String> user = new HashMap<>();
+                user.put("name", input.getText().toString());
+                //tiến hành cập nhật
+                mReference.setValue(user, new DatabaseReference.CompletionListener() {
+                    @Override
+                    public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                        //nếu thành công thì toast ra và intent qua màn hình chính
+                        Toast.makeText(getApplicationContext(), "Thành công!", Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                        startActivity(intent);
+                    }
+                });
+            }
+        });
+        builder.show();
     }
 }
