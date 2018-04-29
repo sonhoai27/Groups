@@ -28,6 +28,8 @@ import com.google.firebase.database.ValueEventListener;
 import com.sonhoai.groups.R;
 import com.sonhoai.groups.Uti.HandleFBAuth;
 
+import java.util.HashMap;
+
 public class LoginActivity extends AppCompatActivity {
     TextView txtHandleRegister;
     HandleFBAuth handleFBAuth;
@@ -46,43 +48,62 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mReference = mDatabase.getReference("users/" + HandleFBAuth.firebaseAuth.getUid());
-                mReference.addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        if (dataSnapshot.getValue() != null) {
-                            signin(edtEmail.getText().toString(), edtPass.getText().toString());
-                        } else {
-                            AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(LoginActivity.this, R.style.myDialog));
-                            builder.setTitle("Vui lòng cập nhật tên");
-                            builder.setMessage("Bạn đã có tài khoản với Email là: " + HandleFBAuth.firebaseAuth.getCurrentUser().getEmail() + ", " +
-                                    "nhưng bạn chưa cập nhật tên, vui lòng nhập vào bên dưới và nhấn OK.");
+                //kiểm tra đã đăng nhập trước đó hay chưa
+                if(HandleFBAuth.firebaseAuth.getCurrentUser() != null){
+                    //nếu rồi, ktra có tên hay chưa
+                    mReference = mDatabase.getReference("users/" + HandleFBAuth.firebaseAuth.getUid());
+                    mReference.addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            if (dataSnapshot.getValue() != null) {
+                                signin(edtEmail.getText().toString(), edtPass.getText().toString());
+                            } else if((dataSnapshot.getValue() == null)) {
+                                AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(LoginActivity.this, R.style.myDialog));
+                                builder.setTitle("Vui lòng cập nhật tên");
+                                builder.setMessage("Bạn đã có tài khoản với Email là: " + HandleFBAuth.firebaseAuth.getCurrentUser().getEmail() + ", " +
+                                        "nhưng bạn chưa cập nhật tên, vui lòng nhập vào bên dưới và nhấn OK.");
 
-                            // Set up the input
-                            final EditText input = new EditText(getApplicationContext());
-                            // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
-                            input.setInputType(InputType.TYPE_CLASS_TEXT);
-                            input.setHint("Nhập tên của bạn");
-                            input.setTextColor(Color.BLACK);
+                                // Set up the input
+                                final EditText input = new EditText(getApplicationContext());
+                                // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+                                input.setInputType(InputType.TYPE_CLASS_TEXT);
+                                input.setHint("Nhập tên của bạn");
+                                input.setTextColor(Color.BLACK);
 
-                            builder.setView(input);
-                            builder.setCancelable(false);
-                            // Set up the buttons
-                            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Toast.makeText(getApplicationContext(), input.getText().toString(), Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                            builder.show();
+                                builder.setView(input);
+                                builder.setCancelable(false);
+                                // Set up the buttons
+                                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        mReference = mDatabase.getReference("users/" + HandleFBAuth.firebaseAuth.getUid());
+                                        //tạo một object có name:username
+                                        HashMap<String, String> user = new HashMap<>();
+                                        user.put("name", input.getText().toString());
+                                        //tiến hành cập nhật
+                                        mReference.setValue(user, new DatabaseReference.CompletionListener() {
+                                            @Override
+                                            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                                                //nếu thành công thì toast ra và intent qua màn hình chính
+                                                Toast.makeText(getApplicationContext(), "Thành công!", Toast.LENGTH_SHORT).show();
+                                                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                                                startActivity(intent);
+                                            }
+                                        });
+                                    }
+                                });
+                                builder.show();
+                            }
                         }
-                    }
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
 
-                    }
-                });
+                        }
+                    });
+                }else {
+                    signin(edtEmail.getText().toString(), edtPass.getText().toString());
+                }
             }
         });
     }
