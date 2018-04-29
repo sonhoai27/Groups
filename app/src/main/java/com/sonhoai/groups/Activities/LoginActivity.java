@@ -57,6 +57,8 @@ public class LoginActivity extends AppCompatActivity {
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             if (dataSnapshot.getValue() != null) {
                                 signin(edtEmail.getText().toString(), edtPass.getText().toString());
+
+                                //kh mở app 1 class sẽ check dn hay chưa, rồi kra có tên ko, nếu ko thì hiện popup, nếu ng dùng cancel, thì khi login hay dak lại, thì sẽ chạy vào hàm hày để check lại có tên hay chưa
                             } else if((dataSnapshot.getValue() == null)) {
                                 AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(LoginActivity.this, R.style.myDialog));
                                 builder.setTitle("Vui lòng cập nhật tên");
