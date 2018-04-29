@@ -24,6 +24,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.sonhoai.groups.Adapter.ClassesAdapter;
 import com.sonhoai.groups.DataModels.Class;
+import com.sonhoai.groups.DataModels.User;
 import com.sonhoai.groups.R;
 import com.sonhoai.groups.Uti.CallBack;
 import com.sonhoai.groups.Uti.HandleFBAuth;
@@ -80,14 +81,16 @@ public class MainActivity extends AppCompatActivity {
                 public void onClick(DialogInterface dialogInterface, int i) {
                     getNameUser(new CallBack<String>() {
                         @Override
-                        public void isCompleted(String obj) {
+                        public void isCompleted(final String obj) {
                             if(obj!= null){
                                 mClasses = mDatabase.getReference("classes");
                                 Class aClass = new Class(null,edtName.getText().toString(), edtInfo.getText().toString(), HandleFBAuth.firebaseAuth.getUid(), obj);
                                 mClasses.push().setValue(aClass, new DatabaseReference.CompletionListener() {
                                     @Override
                                     public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                                        Log.i("AAAA", "Thanh cong");
+                                        mClasses = mDatabase.getReference("memberClass/"+databaseReference.getKey());
+                                        User user = new User(HandleFBAuth.firebaseAuth.getUid(), obj);
+                                        mClasses.child(HandleFBAuth.firebaseAuth.getUid()).setValue(user);
                                     }
                                 });
                             }
@@ -159,10 +162,50 @@ public class MainActivity extends AppCompatActivity {
     private void detailClass(ListView lv){
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Intent intent = new Intent(getApplicationContext(), GroupsActivity.class);
-                intent.putExtra("idClass", classes.get(i).getId());
-                startActivity(intent);
+            public void onItemClick(AdapterView<?> adapterView, View view, final int po, long l) {
+                mClasses = mDatabase.getReference("memberClass/"+classes.get(po).getId()+"/"+HandleFBAuth.firebaseAuth.getUid());
+                mClasses.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if(dataSnapshot.getValue() != null){
+                            if(dataSnapshot.getValue(User.class).getId().equals(HandleFBAuth.firebaseAuth.getUid())){
+                                Intent intent = new Intent(getApplicationContext(), GroupsActivity.class);
+                                intent.putExtra("idClass", classes.get(po).getId());
+                                startActivity(intent);
+                            }else {
+                                AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(MainActivity.this, R.style.myDialog));
+                                builder.setTitle("Cảnh báo!");
+                                builder.setMessage("Bạn không phải là thành viên lớp này, vui lòng liên hệ leader.");
+                                builder.setNegativeButton("Thoát", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        dialogInterface.dismiss();
+                                    }
+                                });
+
+                                builder.show();
+                            }
+                        }else {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(MainActivity.this, R.style.myDialog));
+                            builder.setTitle("Cảnh báo!");
+                            builder.setMessage("Bạn không phải là thành viên lớp này, vui lòng liên hệ leader.");
+                            builder.setNegativeButton("Thoát", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    dialogInterface.dismiss();
+                                }
+                            });
+
+                            builder.show();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
             }
         });
     }

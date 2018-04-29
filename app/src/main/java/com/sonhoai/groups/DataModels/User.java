@@ -5,15 +5,13 @@ import android.support.annotation.Nullable;
 public class User {
     private String id;
     private String name;
-    private String nodeKey;
 
     public User() {
     }
 
-    public User(@Nullable String id, String name, @Nullable String nodeKey) {
+    public User(@Nullable String id, String name) {
         this.id = id;
         this.name = name;
-        this.nodeKey = nodeKey;
     }
 
     public String getId() {
@@ -30,14 +28,6 @@ public class User {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getNodeKey() {
-        return nodeKey;
-    }
-
-    public void setNodeKey(String nodeKey) {
-        this.nodeKey = nodeKey;
     }
 
     @Override
