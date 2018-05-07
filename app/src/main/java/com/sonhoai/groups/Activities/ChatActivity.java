@@ -38,6 +38,7 @@ import com.sonhoai.groups.Adapter.FileAdapter;
 import com.sonhoai.groups.Adapter.MessageAdapter;
 import com.sonhoai.groups.Adapter.UserChatAdapter;
 import com.sonhoai.groups.DataModels.FileShare;
+import com.sonhoai.groups.DataModels.Group;
 import com.sonhoai.groups.DataModels.GroupUser;
 import com.sonhoai.groups.DataModels.Message;
 import com.sonhoai.groups.R;
@@ -94,6 +95,67 @@ public class ChatActivity extends AppCompatActivity{
         messages = new ArrayList<>();
         messageAdapter = new MessageAdapter(messages,ChatActivity.this);
         lvMessages.setAdapter(messageAdapter);
+        deleteMessage(lvMessages);
+
+    }
+
+    private void deleteMessage(ListView lv){
+        lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, final int po, long l) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(ChatActivity.this, R.style.myDialog));
+                builder.setTitle("Bạn muốn xóa tin nhắn này?");
+                builder.setPositiveButton("Xóa", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        mReference = mDatabase.getReference("groups/"+groupKey+"/");
+                        mReference.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                Log.i("DATATAT", String.valueOf(dataSnapshot));
+                                if(dataSnapshot !=null){
+                                    Group group = dataSnapshot.getValue(Group.class);
+                                    if(group.getIdUser().equals(HandleFBAuth.firebaseAuth.getUid()) ){
+                                        mReference = mDatabase.getReference("messages/" + groupKey + "/" + messages.get(po).getId());
+                                        mReference.removeValue(new DatabaseReference.CompletionListener() {
+                                            @Override
+                                            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                                                Toast.makeText(getApplicationContext(), "Thành công!", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                                    }else if(messages.get(po).getIdUser().equals(HandleFBAuth.firebaseAuth.getUid())) {
+                                        mReference = mDatabase.getReference("messages/" + groupKey + "/" + messages.get(po).getId());
+                                        mReference.removeValue(new DatabaseReference.CompletionListener() {
+                                            @Override
+                                            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                                                Toast.makeText(getApplicationContext(), "Thành công!", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                                    }else {
+                                        Toast.makeText(getApplicationContext(), "Bạn không có quyền xóa, chỉ có Leader của nhóm thuyết trình mới được xóa!.", Toast.LENGTH_SHORT).show();
+                                    }
+                                }else {
+                                    Toast.makeText(getApplicationContext(), "Bạn không có quyền xóa, chỉ có Leader của nhóm thuyết trình mới được xóa!.", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+                    }
+                });
+                builder.setNegativeButton("Hủy", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                });
+                builder.show();
+                return false;
+            }
+        });
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -465,6 +527,7 @@ public class ChatActivity extends AppCompatActivity{
                         dialogInterface.dismiss();
                     }
                 });
+                builder.show();
                 return false;
             }
         });
