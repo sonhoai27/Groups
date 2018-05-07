@@ -7,4 +7,9 @@
         android:orderInCategory="90"
         android:title="Thêm lớp học"
         app:showAsAction="always" />
+    <item android:icon="@drawable/ic_exit_to_app_black_24dp"
+        android:id="@+id/action_logout"
+        android:orderInCategory="100"
+        android:title="Đăng xuất"
+        app:showAsAction="always" />
 </menu>

@@ -3,6 +3,7 @@ package com.sonhoai.groups.Activities;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -16,6 +17,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -112,6 +114,16 @@ public class MainActivity extends AppCompatActivity {
             });
 
             builder.show();
+        }else if(item.getItemId() == R.id.action_logout){
+            HandleFBAuth.firebaseAuth.signOut();
+            Toast.makeText(getApplicationContext(), "Thành công!", Toast.LENGTH_SHORT).show();
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                    startActivity(intent);
+                }
+            }, 1000);
         }
         return true;
     }

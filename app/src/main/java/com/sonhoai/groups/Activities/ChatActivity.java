@@ -4,6 +4,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -139,6 +140,7 @@ public class ChatActivity extends AppCompatActivity{
                 lvListFile.setAdapter(fileAdapter);
                 //hàm xử lý click vào 1 file nhất định, khi click vào thì sẽ tải file về máy
                 onClickItemFile(lvListFile, obj);
+                deleteFile(lvListFile, obj);
             }
 
             @Override
@@ -265,6 +267,7 @@ public class ChatActivity extends AppCompatActivity{
 
             }
         });
+
         builder.setPositiveButton("Thoát", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
@@ -450,6 +453,57 @@ public class ChatActivity extends AppCompatActivity{
                     e.printStackTrace();
                 }
                 return false;
+            }
+        });
+    }
+
+    private void deleteFile(ListView lv, final List<FileShare> fileShares){
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, final int po, long l) {
+                AlertDialog.Builder  builder = new AlertDialog.Builder(new ContextThemeWrapper(ChatActivity.this, R.style.myDialog));
+                builder.setTitle("Bạn có muốn xóa?");
+                builder.setMessage("Vui lòng nhấn nút OK để xóa, hủy để thoát.");
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(final DialogInterface dialogInterface, int i) {
+                        // Create a storage reference from our app
+                        StorageReference desertRef = storageRef.child(fileShares.get(po).getNameFile());
+                        desertRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                mReference = mDatabase.getReference("fileGroup/"+groupKey+"/"+fileShares.get(po).getId());
+                                mReference.removeValue(new DatabaseReference.CompletionListener() {
+                                    @Override
+                                    public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                                        new Handler().postDelayed(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Toast.makeText(getApplicationContext(), "Thành công!", Toast.LENGTH_SHORT).show();
+                                                dialogInterface.dismiss();
+                                            }
+                                        }, 600);
+                                    }
+                                });
+
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception exception) {
+                                // Uh-oh, an error occurred!
+                            }
+                        });
+                    }
+                });
+
+                builder.setNegativeButton("Hủy", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                });
+
+                builder.show();
             }
         });
     }
