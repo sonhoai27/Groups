@@ -423,35 +423,48 @@ public class ChatActivity extends AppCompatActivity{
         lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, final int po, long l) {
-                Toast.makeText(getApplicationContext(), fileShares.get(po).getContent(), Toast.LENGTH_SHORT).show();
-                StorageReference islandRef = storageRef.child(fileShares.get(po).getNameFile());
-                int size = fileShares.get(po).getNameFile().split(Pattern.quote(".")).length;
-                Log.i("SIZEEEE", String.valueOf(size));
-                String duoi = fileShares.get(po).getNameFile().split(Pattern.quote("."))[size - 1];
-                File dir = new File(Environment.getExternalStorageDirectory() + "/Download");
-                final File file = new File(dir,fileShares.get(po).getNameFile());
-                try {
-                    if(!dir.exists()){
-                        //nếu thư mục không tồn tạo thì tạo
-                        dir.mkdir();
+                AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(ChatActivity.this, R.style.myDialog));
+                builder.setTitle("Tải tập tin");
+                builder.setPositiveButton("Tải", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Toast.makeText(getApplicationContext(), fileShares.get(po).getContent(), Toast.LENGTH_SHORT).show();
+                        StorageReference islandRef = storageRef.child(fileShares.get(po).getNameFile());
+                        int size = fileShares.get(po).getNameFile().split(Pattern.quote(".")).length;
+                        Log.i("SIZEEEE", String.valueOf(size));
+                        String duoi = fileShares.get(po).getNameFile().split(Pattern.quote("."))[size - 1];
+                        File dir = new File(Environment.getExternalStorageDirectory() + "/Download");
+                        final File file = new File(dir,fileShares.get(po).getNameFile());
+                        try {
+                            if(!dir.exists()){
+                                //nếu thư mục không tồn tạo thì tạo
+                                dir.mkdir();
+                            }
+                            file.createNewFile();
+                            //lấy file
+                            islandRef.getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                                @Override
+                                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                    // Local temp file has been created
+                                    Toast.makeText(getApplicationContext(), "Tải file "+taskSnapshot.getStorage().getName()+" thành công!",Toast.LENGTH_SHORT).show();
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception exception) {
+                                    // Handle any errors
+                                }
+                            });
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
-                    file.createNewFile();
-                    //lấy file
-                    islandRef.getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-                        @Override
-                        public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                            // Local temp file has been created
-                            Toast.makeText(getApplicationContext(), "Tải file "+taskSnapshot.getStorage().getName()+" thành công!",Toast.LENGTH_SHORT).show();
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception exception) {
-                            // Handle any errors
-                        }
-                    });
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                });
+                builder.setNegativeButton("Hủy", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                });
                 return false;
             }
         });
