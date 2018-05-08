@@ -67,4 +67,16 @@ public class Group {
     public void setIdUser(String idUser) {
         this.idUser = idUser;
     }
+
+    @Override
+    public String toString() {
+        return "Group{" +
+                "id='" + id + '\'' +
+                ", idClass='" + idClass + '\'' +
+                ", name='" + name + '\'' +
+                ", content='" + content + '\'' +
+                ", date='" + date + '\'' +
+                ", idUser='" + idUser + '\'' +
+                '}';
+    }
 }

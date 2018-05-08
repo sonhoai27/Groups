@@ -98,7 +98,7 @@ public class GroupsActivity extends AppCompatActivity {
         //nhấn lâu thì ds user của class này, chọn user để thêm vào lớp
         lvGroups.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
-            public boolean onItemLongClick(AdapterView<?> adapterView, View view, final int i, long l) {
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, final int po, long l) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(GroupsActivity.this, R.style.myDialog));
 
                 LayoutInflater layoutInflater = getLayoutInflater();
@@ -114,7 +114,7 @@ public class GroupsActivity extends AppCompatActivity {
                 UserAdapter userAdapter = new UserAdapter(users, GroupsActivity.this);
                 lv.setAdapter(userAdapter);
 
-                getNameUser(groupList.get(i).getIdUser(), new CallBack<String>() {
+                getNameUser(groupList.get(po).getIdUser(), new CallBack<String>() {
                     @Override
                     public void isCompleted(String obj) {
                         leader.setText("Leader: " + obj);
@@ -126,19 +126,19 @@ public class GroupsActivity extends AppCompatActivity {
                     }
                 });
                 //hiển thị ra ds các thành viên trong lớp có thể thêm vào nhóm này
-                showMemberOfClassToAddGroup(userAdapter, users, groupList.get(i));
+                showMemberOfClassToAddGroup(userAdapter, users, groupList.get(po));
                 //khi click vào 1 user thì thêm vào nhóm
                 lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
-                    public void onItemClick(AdapterView<?> adapterView, View view, int p, long l) {
+                    public void onItemClick(AdapterView<?> adapterView, View view, final int p, long l) {
                         GroupUser groupUser = new GroupUser(
                                 users.get(p).getId(),
                                 users.get(p).getName(),
                                 "0",
                                 "0",
-                                groupList.get(i).getId()
+                                groupList.get(po).getId()
                         );
-                        addUserToGroup(groupUser, groupList.get(i));
+                        addUserToGroup(groupUser, groupList.get(po));
                     }
                 });
 
@@ -151,7 +151,17 @@ public class GroupsActivity extends AppCompatActivity {
                 builder.setNegativeButton("Xóa nhóm này", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
+                        deleteMemberGroup(groupList.get(po).getId(), new CallBack<String>() {
+                            @Override
+                            public void isCompleted(String obj) {
+                                Toast.makeText(getApplicationContext(), "Thành công!", Toast.LENGTH_SHORT).show();
+                            }
 
+                            @Override
+                            public void isFail(String obj) {
+
+                            }
+                        });
                     }
                 });
 
@@ -683,6 +693,80 @@ public class GroupsActivity extends AppCompatActivity {
             @Override
             public void onCancelled(DatabaseError databaseError) {
 
+            }
+        });
+    }
+
+    private void deleteMemberGroup(final String idGroup, final CallBack<String> callBack){
+        AlertDialog.Builder  builder = new AlertDialog.Builder(new ContextThemeWrapper(GroupsActivity.this, R.style.myDialog));
+        builder.setTitle("Bạn muốn xóa group này?");
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                mReference = mDatabase.getReference("groups/"+idGroup);
+                mReference.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        try {
+                            if(dataSnapshot!=null){
+                                Group group = dataSnapshot.getValue(Group.class);
+                                if(group.getIdUser().equals(HandleFBAuth.firebaseAuth.getUid()) ){
+                                    Log.i("AASDDD", String.valueOf(group.getIdUser()));
+                                    mReference = mDatabase.getReference("memberGroup/"+idGroup);
+                                    mReference.removeValue(new DatabaseReference.CompletionListener() {
+                                        @Override
+                                        public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                                            deleteMessageGroup(idGroup);
+                                        }
+                                    });
+                                }else {
+                                    Toast.makeText(getApplicationContext(), "Bạn phải là leader nhóm này.", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+            }
+        });
+        builder.setNegativeButton("Hủy", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+            }
+        });
+        builder.show();
+    }
+    private void deleteMessageGroup(final String idGroup){
+        mReference = mDatabase.getReference("messages/"+idGroup);
+        mReference.removeValue(new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+               deleteFileGroup(idGroup);
+            }
+        });
+    }
+    private void deleteFileGroup(final String idGroup){
+        mReference = mDatabase.getReference("fileGroup/"+idGroup);
+        mReference.removeValue(new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+              deleteGroup(idGroup);
+            }
+        });
+    }
+    private void deleteGroup(final String idGroup){
+        mReference = mDatabase.getReference("groups/"+idGroup);
+        mReference.removeValue(new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                Toast.makeText(getApplicationContext(), "Thanh cong", Toast.LENGTH_SHORT).show();
             }
         });
     }
