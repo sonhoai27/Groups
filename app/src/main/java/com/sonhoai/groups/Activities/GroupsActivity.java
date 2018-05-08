@@ -70,7 +70,7 @@ public class GroupsActivity extends AppCompatActivity {
         getClassLists();
     }
 
-    //class grroup này là nơi chứa tất cả các group thuộc class nào đó
+    //classes grroup này là nơi chứa tất cả các group thuộc classes nào đó
     private void init() {
         lvGroups = findViewById(R.id.lvGroups);
         groupList = new ArrayList<>();
@@ -225,7 +225,7 @@ public class GroupsActivity extends AppCompatActivity {
     }
 
 
-    //class grroup này là nơi chứa tất cả các group thuộc class nào đó
+    //classes grroup này là nơi chứa tất cả các group thuộc classes nào đó
     //lấy ra ds user toàn bộ hệ thống có và user của lớp, so trùng, nếu trùng thì ko hiện ra tránh thêm vào trùng
     //trả về callback để kiểm tra dữ liệu đã sẵn ràng hay chưa
     private void getUserLists(final CallBack<String> userCallBack) {

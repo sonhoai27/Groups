@@ -319,9 +319,37 @@ public class ChatActivity extends AppCompatActivity{
         //hàm load ds user cho dialog này
         loadUserClass(new CallBack<List<GroupUser>>() {
             @Override
-            public void isCompleted(List<GroupUser> obj) {
+            public void isCompleted(final List<GroupUser> obj) {
                 UserChatAdapter userAdapter = new UserChatAdapter(ChatActivity.this, obj);
                 lvListUserClass.setAdapter(userAdapter);
+
+                lvListUserClass.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+                    @Override
+                    public boolean onItemLongClick(AdapterView<?> adapterView, View view, final int po, long l) {
+                        final AlertDialog.Builder xoaBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ChatActivity.this, R.style.myDialog));
+                        xoaBuilder.setTitle("Bạn có muốn xóa thành viên này");
+                        xoaBuilder.setPositiveButton("Xóa", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                mReference = mDatabase.getReference("memberGroup/"+groupKey+"/"+obj.get(po).getId());
+                                mReference.removeValue(new DatabaseReference.CompletionListener() {
+                                    @Override
+                                    public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                                        Toast.makeText(getApplicationContext(), "Thành công", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                            }
+                        });
+                        xoaBuilder.setNegativeButton("Hủy", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                dialogInterface.dismiss();
+                            }
+                        });
+                        xoaBuilder.show();
+                        return false;
+                    }
+                });
             }
 
             @Override
@@ -329,7 +357,6 @@ public class ChatActivity extends AppCompatActivity{
 
             }
         });
-
         builder.setPositiveButton("Thoát", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {

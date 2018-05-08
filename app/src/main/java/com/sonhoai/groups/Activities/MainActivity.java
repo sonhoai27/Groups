@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void init(){
+        setTitle("Danh sách lớp");
         classes = new ArrayList<>();
         lvClasses = findViewById(R.id.lvClasses);
         mClasses = mDatabase.getReference("classes");
@@ -221,7 +222,34 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+    private void deleteClass(ListView lv){
+        lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, final int po, long l) {
+                mClasses = mDatabase.getReference("memberClass/"+classes.get(po).getId()+"/"+HandleFBAuth.firebaseAuth.getUid());
+                mClasses.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        try{
+                            if(dataSnapshot.getValue(User.class).getId().equals(HandleFBAuth.firebaseAuth.getUid())){
 
+                            }else {
+                                Toast.makeText(getApplicationContext(), "Bạn không phải là thành viên lớp này, vui lòng liên hệ leader.", Toast.LENGTH_SHORT).show();
+                            }
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+                return false;
+            }
+        });
+    }
     //xử lý nhấn nút back, nếu là nút back, thì thoát khỏi app và trở về màn hình home
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
