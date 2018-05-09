@@ -3,6 +3,7 @@ package com.sonhoai.groups.Adapter;
 import android.content.Context;
 import android.graphics.Color;
 import android.text.Html;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -71,6 +72,16 @@ public class MessageAdapter extends BaseAdapter {
 
             holder.txtContent.setTextColor(Color.GRAY);
         }
+        try {
+            Log.i("AAAAA", messages.get(i).getContent().substring(0, 2));
+            if(messages.get(i).getContent().substring(0, 2).equals("<f")){
+                holder.txtContent.setBackgroundResource(R.drawable.bg_gradient_message);
+                holder.txtContent.setTextColor(Color.WHITE);
+            }
+        }catch (Exception e){
+
+        }
+
 
         return view;
     }

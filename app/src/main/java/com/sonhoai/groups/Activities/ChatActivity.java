@@ -1,7 +1,13 @@
 package com.sonhoai.groups.Activities;
 
+import android.app.DatePickerDialog;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -10,13 +16,17 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -52,6 +62,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 public class ChatActivity extends AppCompatActivity{
@@ -86,6 +97,15 @@ public class ChatActivity extends AppCompatActivity{
 
     private void init(){
         setTitle("Nhóm: "+groupName);
+        getSupportActionBar().setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_toolbar));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Window window = getWindow();
+            Drawable background = getResources().getDrawable(R.drawable.bg_toolbar);
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            window.setStatusBarColor(getResources().getColor(android.R.color.transparent));
+            window.setNavigationBarColor(getResources().getColor(android.R.color.transparent));
+            window.setBackgroundDrawable(background);
+        }
         btnSend = findViewById(R.id.btnSend);
         lvMessages = findViewById(R.id.lvMessages);
         edtInput = findViewById(R.id.edtInputMessage);
@@ -175,8 +195,108 @@ public class ChatActivity extends AppCompatActivity{
                 showFile();
                 return true;
             }
+            case R.id.action_edit_group: {
+                editGroup();
+                return true;
+            }
         }
         return false;
+    }
+
+    private void editGroup() {
+        //tạo 1 dialog
+        final AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(ChatActivity.this, R.style.myDialog));
+        LayoutInflater layoutInflater = getLayoutInflater();
+        View view = layoutInflater.inflate(R.layout.dialog_add_group, null);
+        builder.setTitle("Sửa nhóm");
+        builder.setView(view);
+        Dialog dialog = builder.create();
+        final EditText edtName = view.findViewById(R.id.edtGroupName);
+        final EditText edtContent = view.findViewById(R.id.edtGroupContent);
+        final EditText edtDate = view.findViewById(R.id.edtGroupDate);
+        chooseDate(edtDate);
+        getInfoGroupToEdit(edtName, edtContent, edtDate, dialog);
+        builder.setNegativeButton("Thoát", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.cancel();
+            }
+        });
+        builder.setPositiveButton("Sửa", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                mReference = mDatabase.getReference("groups/"+groupKey);
+                Group group = new Group(
+                        null,
+                        edtName.getTag().toString(),//idclass
+                        edtName.getText().toString(),
+                        edtContent.getText().toString(),
+                        edtDate.getText().toString(),
+                        edtContent.getTag().toString()//iduser
+                );
+                mReference.setValue(group, new DatabaseReference.CompletionListener() {
+                    @Override
+                    public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                        Toast.makeText(getApplicationContext(), "Thành công", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
+        builder.show();
+    }
+
+    private void chooseDate(final EditText picker) {
+        final Calendar calendar = Calendar.getInstance();
+        final DatePickerDialog.OnDateSetListener date = new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker datePicker, int year, int month, int day) {
+                calendar.set(Calendar.YEAR, year);
+                calendar.set(Calendar.MONTH, month);
+                calendar.set(Calendar.DAY_OF_MONTH, day);
+                String calenderFormat = "dd-MM-yyyy";
+                SimpleDateFormat sdf = new SimpleDateFormat(calenderFormat, Locale.ENGLISH);
+                picker.setText(sdf.format(calendar.getTime()));
+            }
+        };
+        picker.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new DatePickerDialog(
+                        view.getContext(),
+                        date,
+                        calendar.get(Calendar.YEAR),
+                        calendar.get(Calendar.MONTH),
+                        calendar.get(Calendar.DAY_OF_MONTH)
+                ).show();
+            }
+        });
+    }
+
+    private void getInfoGroupToEdit(final EditText edtName, final EditText edtContent, final EditText edtDate, final Dialog  dialog){
+        mReference = mDatabase.getReference("groups/"+groupKey);
+        mReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot!=null){
+                    Group group = dataSnapshot.getValue(Group.class);
+                    if(group.getIdUser().equals(HandleFBAuth.firebaseAuth.getUid())){
+                        edtContent.setText(group.getContent());
+                        edtName.setText(group.getName());
+                        edtDate.setText(group.getDate());
+                        edtName.setTag(group.getIdClass());
+                        edtContent.setTag(group.getIdUser());
+                    }else {
+                        Toast.makeText(getApplicationContext(), "Bạn không có quyền sửa", Toast.LENGTH_SHORT).show();
+                        dialog.dismiss();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     //lấy ra ds các file mà thành viên đã chia sẽ
@@ -188,8 +308,18 @@ public class ChatActivity extends AppCompatActivity{
         View view = layoutInflater.inflate(R.layout.dialog_manage_files, null);
 
         builder.setView(view);
-        builder.setCancelable(true);
+        final Dialog dialog = builder.show();
 
+
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        Window dialogWindow = dialog.getWindow();
+        dialog.getWindow().getAttributes().windowAnimations = R.style.Slide_Up_Down;
+        WindowManager.LayoutParams lp = dialogWindow.getAttributes();
+
+        lp.x = 0;
+        lp.y = 16; // The new position of the Y coordinates
+        dialogWindow.setGravity(Gravity.CENTER | Gravity.BOTTOM);
+        dialogWindow.setAttributes(lp);
         final ListView lvListFile = view.findViewById(R.id.lvListFile);
 
         //hàm load file, sử dụng 1 callback, nguyên nhân do có thể chạy bất đồng bộ, bất đồng bộm là chương trình sẽ không thực thi từ trên xuống dưới
@@ -216,7 +346,6 @@ public class ChatActivity extends AppCompatActivity{
                 dialogInterface.cancel();
             }
         });
-        builder.show();
     }
 
     //lấy ra ds ti nhắn
@@ -313,8 +442,18 @@ public class ChatActivity extends AppCompatActivity{
         View view = layoutInflater.inflate(R.layout.dialog_show_user, null);
 
         builder.setView(view);
-        builder.setCancelable(false);
+        final Dialog dialog = builder.show();
 
+
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        Window dialogWindow = dialog.getWindow();
+        dialog.getWindow().getAttributes().windowAnimations = R.style.Slide_Up_Down;
+        WindowManager.LayoutParams lp = dialogWindow.getAttributes();
+
+        lp.x = 0;
+        lp.y = 16; // The new position of the Y coordinates
+        dialogWindow.setGravity(Gravity.CENTER | Gravity.BOTTOM);
+        dialogWindow.setAttributes(lp);
         final ListView lvListUserClass = view.findViewById(R.id.lvListUserClass);
         //hàm load ds user cho dialog này
         loadUserClass(new CallBack<List<GroupUser>>() {
@@ -363,8 +502,6 @@ public class ChatActivity extends AppCompatActivity{
                 dialogInterface.cancel();
             }
         });
-
-        builder.show();
     }
 
     //hàm load ra ds user
@@ -426,11 +563,22 @@ public class ChatActivity extends AppCompatActivity{
                 View view = layoutInflater.inflate(R.layout.dialog_upload_file, null);
 
                 builder.setView(view);
-                builder.setCancelable(true);
 
                 TextView txtPickFile = view.findViewById(R.id.txtPickFile);
 
-                final AlertDialog dialog = builder.show();
+                final Dialog dialog = builder.show();
+
+
+                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                Window dialogWindow = dialog.getWindow();
+                dialog.getWindow().getAttributes().windowAnimations = R.style.Slide_Up_Down;
+                WindowManager.LayoutParams lp = dialogWindow.getAttributes();
+
+                lp.x = 0;
+                lp.y = 16; // The new position of the Y coordinates
+                dialogWindow.setGravity(Gravity.CENTER | Gravity.BOTTOM);
+                dialogWindow.setAttributes(lp);
+
                 txtPickFile.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -483,7 +631,7 @@ public class ChatActivity extends AppCompatActivity{
                                                 null,
                                                 HandleFBAuth.firebaseAuth.getUid(),
                                                 obj,
-                                                "<font color='#08f'><b>Tài liệu: </b>"+data.getData().getLastPathSegment().split(":")[1]+"</font>",
+                                                "<font color='white'><span>Tài liệu: </span>"+data.getData().getLastPathSegment().split(":")[1]+"</font>",
                                                 currentDateTimeString
                                         );
                                         mReference.child(groupKey).push().setValue(message, new DatabaseReference.CompletionListener() {
@@ -514,6 +662,18 @@ public class ChatActivity extends AppCompatActivity{
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, final int po, long l) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(ChatActivity.this, R.style.myDialog));
                 builder.setTitle("Tải tập tin");
+                final Dialog dialog = builder.show();
+
+
+                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                Window dialogWindow = dialog.getWindow();
+                dialog.getWindow().getAttributes().windowAnimations = R.style.Slide_Up_Down;
+                WindowManager.LayoutParams lp = dialogWindow.getAttributes();
+
+                lp.x = 0;
+                lp.y = 16; // The new position of the Y coordinates
+                dialogWindow.setGravity(Gravity.CENTER | Gravity.BOTTOM);
+                dialogWindow.setAttributes(lp);
                 builder.setPositiveButton("Tải", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -554,7 +714,6 @@ public class ChatActivity extends AppCompatActivity{
                         dialogInterface.dismiss();
                     }
                 });
-                builder.show();
                 return false;
             }
         });

@@ -2,6 +2,8 @@ package com.sonhoai.groups.Activities;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AlertDialog;
@@ -14,6 +16,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -47,10 +51,20 @@ public class MainActivity extends AppCompatActivity {
         init();
         getClassLists();
         detailClass(lvClasses);
+        editClass(lvClasses);
     }
 
     private void init(){
         setTitle("Danh sách lớp");
+        getSupportActionBar().setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_toolbar));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Window window = getWindow();
+            Drawable background = getResources().getDrawable(R.drawable.bg_toolbar);
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            window.setStatusBarColor(getResources().getColor(android.R.color.transparent));
+            window.setNavigationBarColor(getResources().getColor(android.R.color.transparent));
+            window.setBackgroundDrawable(background);
+        }
         classes = new ArrayList<>();
         lvClasses = findViewById(R.id.lvClasses);
         mClasses = mDatabase.getReference("classes");
@@ -79,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
             final EditText edtName = view.findViewById(R.id.edtClassName);
             final EditText edtInfo = view.findViewById(R.id.edtInfoClass);
 
-            builder.setNegativeButton("Thêm", new DialogInterface.OnClickListener() {
+            builder.setPositiveButton("Thêm", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
                     getNameUser(new CallBack<String>() {
@@ -107,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-            builder.setPositiveButton("Thoát", new DialogInterface.OnClickListener() {
+            builder.setNegativeButton("Thoát", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
 
@@ -222,22 +236,64 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-    private void deleteClass(ListView lv){
+    private void editClass(ListView lv){
         lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, final int po, long l) {
-                mClasses = mDatabase.getReference("memberClass/"+classes.get(po).getId()+"/"+HandleFBAuth.firebaseAuth.getUid());
+                mClasses = mDatabase.getReference("classes/"+classes.get(po).getId());
                 mClasses.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        try{
-                            if(dataSnapshot.getValue(User.class).getId().equals(HandleFBAuth.firebaseAuth.getUid())){
 
+                        if(dataSnapshot!=null){
+                            Class aClass = dataSnapshot.getValue(Class.class);
+                            if(aClass.getIdUser().equals(HandleFBAuth.firebaseAuth.getUid())){
+                                Log.i("AAAA", String.valueOf(aClass));
+                                AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(MainActivity.this, R.style.myDialog));
+
+                                LayoutInflater layoutInflater = getLayoutInflater();
+                                View view = layoutInflater.inflate(R.layout.dialog_add_class, null);
+
+                                builder.setView(view);
+                                builder.setCancelable(true);
+
+                                final EditText edtName = view.findViewById(R.id.edtClassName);
+                                final EditText edtInfo = view.findViewById(R.id.edtInfoClass);
+                                edtInfo.setText(aClass.getInfo());
+                                edtInfo.setTag(aClass.getIdUser());
+                                edtName.setText(aClass.getName());
+                                edtName.setTag(aClass.getUser());
+                                builder.setPositiveButton("Thêm", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(final DialogInterface dialogInterface, int i) {
+                                        Class editClass = new Class(
+                                                null,
+                                                edtName.getText().toString(),
+                                                edtInfo.getText().toString(),
+                                                edtInfo.getTag().toString(),
+                                                edtName.getTag().toString()
+                                        );
+                                        mClasses.setValue(editClass, new DatabaseReference.CompletionListener() {
+                                            @Override
+                                            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                                                Toast.makeText(getApplicationContext(), "Thành công", Toast.LENGTH_SHORT).show();
+                                                dialogInterface.cancel();
+                                            }
+                                        });
+                                    }
+                                });
+
+                                builder.setNegativeButton("Thoát", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        dialogInterface.dismiss();
+                                    }
+                                });
+
+                                builder.show();
                             }else {
-                                Toast.makeText(getApplicationContext(), "Bạn không phải là thành viên lớp này, vui lòng liên hệ leader.", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getApplicationContext(), "Bạn không có quyền", Toast.LENGTH_SHORT).show();
                             }
-                        }catch (Exception e){
-                            e.printStackTrace();
                         }
                     }
 

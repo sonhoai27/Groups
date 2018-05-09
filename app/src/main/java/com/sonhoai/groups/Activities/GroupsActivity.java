@@ -1,9 +1,14 @@
 package com.sonhoai.groups.Activities;
 
 import android.app.DatePickerDialog;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.Rect;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
@@ -11,12 +16,15 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -72,6 +80,15 @@ public class GroupsActivity extends AppCompatActivity {
 
     //classes grroup này là nơi chứa tất cả các group thuộc classes nào đó
     private void init() {
+        getSupportActionBar().setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_toolbar));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Window window = getWindow();
+            Drawable background = getResources().getDrawable(R.drawable.bg_toolbar);
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            window.setStatusBarColor(getResources().getColor(android.R.color.transparent));
+            window.setNavigationBarColor(getResources().getColor(android.R.color.transparent));
+            window.setBackgroundDrawable(background);
+        }
         lvGroups = findViewById(R.id.lvGroups);
         groupList = new ArrayList<>();
         groupAdapter = new GroupAdapter(groupList, getApplicationContext());
@@ -105,8 +122,6 @@ public class GroupsActivity extends AppCompatActivity {
                 View v = layoutInflater.inflate(R.layout.dialog_add_user_to_group, null);
 
                 builder.setView(v);
-                builder.setCancelable(true);
-
                 final ListView lv = v.findViewById(R.id.lvListMemberOfClass);
                 final TextView leader = v.findViewById(R.id.txtLeaderGroup);
 
@@ -164,7 +179,6 @@ public class GroupsActivity extends AppCompatActivity {
                         });
                     }
                 });
-
                 builder.show();
                 return false;
             }
@@ -438,9 +452,8 @@ public class GroupsActivity extends AppCompatActivity {
 
         LayoutInflater layoutInflater = getLayoutInflater();
         View view = layoutInflater.inflate(R.layout.dialog_add_group, null);
-
+        builder.setTitle("Thêm nhóm thuyết trình");
         builder.setView(view);
-        builder.setCancelable(true);
 
         final EditText edtName = view.findViewById(R.id.edtGroupName);
         final EditText edtContent = view.findViewById(R.id.edtGroupContent);
@@ -475,6 +488,7 @@ public class GroupsActivity extends AppCompatActivity {
         });
 
         builder.show();
+
     }
 
     //dialog hiển thĩ ra ds user
@@ -485,7 +499,18 @@ public class GroupsActivity extends AppCompatActivity {
         View view = layoutInflater.inflate(R.layout.dialog_show_user, null);
 
         builder.setView(view);
-        builder.setCancelable(false);
+        final Dialog dialog = builder.show();
+
+
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        Window dialogWindow = dialog.getWindow();
+        dialog.getWindow().getAttributes().windowAnimations = R.style.Slide_Up_Down;
+        WindowManager.LayoutParams lp = dialogWindow.getAttributes();
+
+        lp.x = 0;
+        lp.y = 16; // The new position of the Y coordinates
+        dialogWindow.setGravity(Gravity.CENTER | Gravity.BOTTOM);
+        dialogWindow.setAttributes(lp);
 
         final ListView lvListUserClass = view.findViewById(R.id.lvListUserClass);
         loadUserClass(new CallBack<List<User>>() {
@@ -507,8 +532,6 @@ public class GroupsActivity extends AppCompatActivity {
                 dialogInterface.cancel();
             }
         });
-
-        builder.show();
     }
 
     //hàm có tác dụng giúp hàm listUser lấy ra ds user, kiểm tra chắc chắn đã lấy ra xong chưa

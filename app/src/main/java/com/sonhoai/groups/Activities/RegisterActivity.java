@@ -29,7 +29,13 @@ public class RegisterActivity extends AppCompatActivity {
             public void onClick(View view) {
                 String email = edtEmail.getText().toString();
                 String passwrod = edtPass.getText().toString();
-                signup(email,passwrod);
+
+                if(!email.isEmpty() && !passwrod.isEmpty()){
+                    signup(email,passwrod);
+                }else {
+                    Toast.makeText(getApplicationContext(), "Vui lòng nhập", Toast.LENGTH_SHORT).show();
+                }
+
             }
         });
     }

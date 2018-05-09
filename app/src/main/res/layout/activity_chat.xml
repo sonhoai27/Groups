@@ -16,23 +16,27 @@
         android:layout_height="wrap_content"/>
 
     <LinearLayout
+        android:layout_marginRight="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginBottom="16dp"
+        android:layout_gravity="bottom"
         android:elevation="8dp"
         android:layout_width="match_parent"
-        android:layout_height="55dp"
-        android:layout_weight="1"
-        android:background="@color/colorAccent"
-        android:gravity="center_vertical"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_gradient_box"
+        android:gravity="center"
         android:orientation="horizontal">
 
         <EditText
+            android:textColor="#fff"
             android:id="@+id/edtInputMessage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="10"
             android:allowUndo="true"
-            android:backgroundTint="@color/colorAccent"
+            android:backgroundTint="@android:color/transparent"
             android:hint="Viết tin nhắn"
-            android:padding="16dp"
+            android:padding="8dp"
             android:textColorHint="#fff" />
 
         <Button
@@ -51,6 +55,6 @@
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:padding="16dp"
-            android:src="@drawable/ic_white_add" />
+            app:srcCompat="@drawable/ic_add_black_24dp" />
     </LinearLayout>
 </LinearLayout>

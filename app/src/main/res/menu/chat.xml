@@ -13,4 +13,10 @@
         android:orderInCategory="100"
         android:title="Tập tin"
         app:showAsAction="always" />
+    <item
+        android:icon="@drawable/ic_edit_location_black_24dp"
+        android:id="@+id/action_edit_group"
+        android:orderInCategory="100"
+        android:title="Tập tin"
+        app:showAsAction="always" />
 </menu>

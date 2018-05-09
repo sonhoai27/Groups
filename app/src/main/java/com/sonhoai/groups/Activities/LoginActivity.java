@@ -73,7 +73,12 @@ public class LoginActivity extends AppCompatActivity {
                         }
                     });
                 }else {
-                    signin(edtEmail.getText().toString(), edtPass.getText().toString());
+                    if(!edtEmail.getText().toString().isEmpty() && !edtPass.getText().toString().isEmpty()){
+                        signin(edtEmail.getText().toString(), edtPass.getText().toString());
+                    }else {
+                        Toast.makeText(getApplicationContext(), "Vui lòng nhập", Toast.LENGTH_SHORT).show();
+                    }
+
                 }
             }
         });

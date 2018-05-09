@@ -12,24 +12,41 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
-
+        <ImageView
+            android:layout_marginBottom="64dp"
+            android:layout_gravity="center"
+            android:src="@drawable/mygroup"
+            android:layout_width="100dp"
+            android:layout_height="100dp" />
         <EditText
+            android:textColor="#fff"
+            android:textColorHint="#fff"
+            android:padding="16dp"
+            android:background="@drawable/gradient"
             android:id="@+id/edtLiEmail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Email" />
 
         <EditText
+            android:layout_marginTop="16dp"
+            android:padding="16dp"
+            android:background="@drawable/gradient"
+            android:textColor="#fff"
+            android:textColorHint="#fff"
             android:id="@+id/edtLiPass"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Mật khẩu" />
         <Button
+            android:padding="8dp"
+            android:textColor="#fff"
+            android:background="@drawable/bg_gradient"
             android:id="@+id/btnLogin"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="32dp"
             android:text="Đăng nhập" />
         <TextView
             android:id="@+id/txtHandleRegister"
