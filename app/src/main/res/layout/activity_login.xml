@@ -19,6 +19,7 @@
             android:layout_width="100dp"
             android:layout_height="100dp" />
         <EditText
+            android:inputType="textEmailAddress"
             android:textColor="#fff"
             android:textColorHint="#fff"
             android:padding="16dp"
@@ -29,6 +30,7 @@
             android:hint="Email" />
 
         <EditText
+            android:inputType="textPassword"
             android:layout_marginTop="16dp"
             android:padding="16dp"
             android:background="@drawable/gradient"

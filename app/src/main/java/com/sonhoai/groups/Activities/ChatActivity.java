@@ -662,18 +662,6 @@ public class ChatActivity extends AppCompatActivity{
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, final int po, long l) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(ChatActivity.this, R.style.myDialog));
                 builder.setTitle("Tải tập tin");
-                final Dialog dialog = builder.show();
-
-
-                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                Window dialogWindow = dialog.getWindow();
-                dialog.getWindow().getAttributes().windowAnimations = R.style.Slide_Up_Down;
-                WindowManager.LayoutParams lp = dialogWindow.getAttributes();
-
-                lp.x = 0;
-                lp.y = 16; // The new position of the Y coordinates
-                dialogWindow.setGravity(Gravity.CENTER | Gravity.BOTTOM);
-                dialogWindow.setAttributes(lp);
                 builder.setPositiveButton("Tải", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -714,6 +702,7 @@ public class ChatActivity extends AppCompatActivity{
                         dialogInterface.dismiss();
                     }
                 });
+                builder.show();
                 return false;
             }
         });

@@ -1,5 +1,7 @@
 package com.sonhoai.groups.DataModels;
 
+import android.support.annotation.Nullable;
+
 public class Group {
     private String id;
     private String idClass;
@@ -11,7 +13,7 @@ public class Group {
     public Group() {
     }
 
-    public Group(String id, String idClass, String name, String content, String date, String idUser) {
+    public Group(@Nullable String id, String idClass, String name, String content, String date, String idUser) {
         this.id = id;
         this.idClass = idClass;
         this.name = name;
